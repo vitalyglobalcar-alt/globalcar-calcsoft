@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GLOBAL CAR — Калькулятор ввоза</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#21262d;
+  --surface3:#30363d;
+  --gold:#e8b84b;
+  --gold2:#f5d06e;
+  --gold-dim:rgba(232,184,75,0.12);
+  --gold-dim2:rgba(232,184,75,0.06);
+  --text:#e6edf3;
+  --text2:#8b949e;
+  --text3:#6e7681;
+  --green:#3fb950;
+  --green-dim:rgba(63,185,80,0.12);
+  --red:#f85149;
+  --red-dim:rgba(248,81,73,0.12);
+  --blue:#58a6ff;
+  --blue-dim:rgba(88,166,255,0.12);
+  --border:#30363d;
+  --border2:#21262d;
+  --r:12px;
+  --r2:8px;
+  --font:'Manrope',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 180px}
+
+/* HEADER */
+.header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:16px 24px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;
+}
+.logo{width:44px;height:44px;flex-shrink:0;border-radius:10px;background:#0d1117;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.logo svg{width:32px;height:32px}
+.brand h1{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.03em}
+.brand p{font-size:11px;color:var(--text3);font-weight:500;margin-top:1px}
+.rates-row{margin-left:auto;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.rate-field{display:flex;flex-direction:column;gap:4px}
+.rate-field label{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
+.rate-field input{width:88px;height:34px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;text-align:center;outline:none;padding:0 8px;transition:.15s}
+.rate-field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 16px;border-radius:20px;border:none;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:.15s;user-select:none;white-space:nowrap}
+.btn-gold{background:var(--gold);color:#0d1117}
+.btn-gold:hover{background:var(--gold2)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-blue{background:var(--blue);color:#0d1117}
+.btn-blue:hover{opacity:.9}
+.btn:active{transform:scale(.97)}
+.btn-sm{height:30px;padding:0 12px;font-size:11px}
+
+/* LAYOUT */
+.page{max-width:960px;margin:0 auto;padding:20px 16px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden}
+.section-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.section-title{font-size:14px;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.section-sub{font-size:11px;color:var(--text3);margin-top:2px;font-weight:500}
+.section-body{padding:20px}
+
+/* GRID */
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+.g-span2{grid-column:span 2}
+.g-span3{grid-column:span 3}
+.g-span4{grid-column:span 4}
+
+/* FIELD */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em}
+.field input[type=text],
+.field input[type=number],
+.field select{
+  height:42px;width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:14px;
+  font-weight:600;
+  padding:0 12px;
+  outline:none;
+  transition:.15s;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M5 6L0 0h10z' fill='%238b949e'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:30px;
+  cursor:pointer;
+}
+.field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+.field .field-display{
+  height:42px;
+  background:var(--bg);
+  border:1px solid var(--border2);
+  border-radius:var(--r2);
+  display:flex;align-items:center;padding:0 12px;gap:8px;
+}
+.field .fd-main{font-size:14px;font-weight:700;color:var(--text)}
+.field .fd-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* PASS STATUS */
+.pass-box{
+  padding:10px 14px;border-radius:var(--r2);border:1px solid var(--border);background:var(--surface2);
+}
+.pass-box.pass-ok{border-color:var(--green);background:var(--green-dim)}
+.pass-box.pass-bad{border-color:var(--red);background:var(--red-dim)}
+.pass-main{font-size:13px;font-weight:700}
+.pass-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* RECOMMEND BADGE */
+.rec-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+  border-radius:20px;font-size:11px;font-weight:700;
+  background:var(--gold-dim);color:var(--gold);border:1px solid rgba(232,184,75,.25);
+}
+
+/* TABS */
+.tabs{display:flex;gap:6px;padding:16px 20px 0;flex-wrap:wrap}
+.tab{
+  padding:8px 18px;border-radius:20px;
+  background:var(--surface2);border:1.5px solid transparent;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:.15s;color:var(--text2);user-select:none;
+}
+.tab:hover{background:var(--surface3);color:var(--text)}
+.tab.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.tab.recommended{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.tab.active.recommended{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+
+/* EDIT BAR */
+.edit-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;background:var(--surface2);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  font-size:12px;font-weight:700;color:var(--text3);
+}
+.toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-track{
+  position:absolute;inset:0;background:var(--surface3);border-radius:12px;
+  cursor:pointer;transition:.2s;
+}
+.toggle-track:before{
+  content:'';position:absolute;width:18px;height:18px;
+  left:3px;top:3px;background:#fff;border-radius:50%;
+  transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.toggle input:checked+.toggle-track{background:var(--green)}
+.toggle input:checked+.toggle-track:before{transform:translateX(18px)}
+
+/* LOGISTICS */
+.block-label{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text3);padding:14px 20px 8px;
+}
+.row-list{border-top:1px solid var(--border2)}
+.log-row{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;border-bottom:1px solid var(--border2);
+  min-height:48px;transition:background .1s;
+}
+.log-row:hover{background:var(--surface2)}
+.log-row:last-child{border-bottom:none}
+.log-row .r-name{flex:1;min-width:0}
+.log-row .r-name input{
+  font-size:14px;font-weight:500;color:var(--text);
+  background:transparent;border:none;outline:none;width:100%;
+  font-family:var(--font);padding:0;height:auto;
+}
+.log-row .r-name input:read-only{cursor:default}
+.log-row .r-name input:not(:read-only):focus{color:var(--gold)}
+.log-row .r-val{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.log-row .r-val input{
+  width:110px;height:34px;text-align:right;padding:0 8px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);
+  color:var(--text);font-family:var(--font);font-size:14px;font-weight:700;outline:none;transition:.15s;
+}
+.log-row .r-val input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+.log-row .r-val input:read-only{background:var(--bg);color:var(--text3);cursor:default}
+.log-row .r-cur{font-size:12px;font-weight:700;color:var(--text3);width:22px;text-align:left}
+.log-row .r-del{
+  width:28px;height:28px;border-radius:6px;border:none;
+  background:transparent;color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:.15s;flex-shrink:0;
+}
+.log-row .r-del:hover{background:var(--red-dim);color:var(--red)}
+.add-form{
+  display:flex;gap:8px;align-items:center;padding:10px 20px;
+  border-top:1px dashed var(--border);
+}
+.add-form input{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r2);color:var(--text);font-family:var(--font);
+  font-size:13px;height:34px;padding:0 10px;outline:none;flex:1;
+}
+.add-form input:focus{border-color:var(--gold)}
+.add-form input.w-price{flex:0 0 100px;text-align:right}
+
+/* CUSTOMS */
+.customs-list{border-top:1px solid var(--border2)}
+.c-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;border-bottom:1px solid var(--border2);
+  font-size:13px;
+}
+.c-row:last-child{border-bottom:none}
+.c-label{font-weight:500;color:var(--text2)}
+.c-val{font-weight:700;color:var(--text);font-size:14px}
+.c-row.total{background:var(--surface2)}
+.c-row.total .c-label{color:var(--text);font-weight:800;font-size:14px}
+.c-row.total .c-val{color:var(--gold);font-size:15px}
+.use140-row{
+  padding:10px 20px;background:var(--surface2);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;
+}
+.use140-row input[type=checkbox]{
+  width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0;
+}
+
+/* REPAIR */
+.repair-toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;font-size:13px;font-weight:700;color:var(--text);
+}
+.repair-content{display:none}
+.repair-content.open{display:block}
+.repair-section-title{
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text3);padding:14px 20px 8px;border-top:1px solid var(--border2);
+}
+.repair-row{
+  display:flex;align-items:center;gap:8px;padding:8px 20px;
+  border-bottom:1px solid var(--border2);font-size:13px;
+}
+.repair-row:last-child{border-bottom:none}
+.repair-row .rr-name{flex:1;min-width:0;color:var(--text2);font-weight:500}
+.repair-row .rr-warn{font-size:10px;color:#f59e0b;font-weight:700;margin-left:4px}
+.repair-row .rr-price{font-size:11px;color:var(--text3);flex-shrink:0;width:90px;text-align:right}
+.repair-row .rr-qty{
+  width:56px;height:30px;text-align:center;padding:0 4px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);
+  color:var(--text);font-family:var(--font);font-size:13px;font-weight:700;outline:none;
+}
+.repair-row .rr-qty:focus{border-color:var(--gold)}
+.repair-row .rr-total{font-weight:800;font-size:13px;color:var(--text);width:80px;text-align:right;flex-shrink:0}
+
+/* TOTAL BAR */
+.total-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:12px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.total-breakdown{flex:1;min-width:0}
+.total-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.total-amount{font-size:28px;font-weight:800;color:var(--gold);letter-spacing:-0.04em;line-height:1}
+.total-sub{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5}
+.total-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* SUMMARY CARDS */
+.sum-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 16px}
+.sum-card{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+  padding:10px 14px;
+}
+.sum-card .sc-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.sum-card .sc-val{font-size:16px;font-weight:800;color:var(--text)}
+.sum-card .sc-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* PDF ONLY */
+.pdf-page{display:none}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .g4{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr}
+  .g-span4{grid-column:span 2}
+  .sum-cards{grid-template-columns:1fr 1fr}
+  .header{gap:12px}
+  .rates-row{margin-left:0;width:100%}
+}
+@media(max-width:500px){
+  .g4,.g3,.g2{grid-template-columns:1fr}
+  .g-span2,.g-span3,.g-span4{grid-column:span 1}
+  .sum-cards{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <svg viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="7" fill="#e8b84b"/>
+      <path d="M5 22l3-8h16l3 8H5z" fill="#0d1117"/>
+      <path d="M8 22v2a1.5 1.5 0 003 0v-2M21 22v2a1.5 1.5 0 003 0v-2" stroke="#e8b84b" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="10" cy="19" r="1" fill="#e8b84b"/>
+      <circle cx="22" cy="19" r="1" fill="#e8b84b"/>
+      <path d="M9 17h14" stroke="#e8b84b" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="brand">
+    <h1>GLOBAL CAR</h1>
+    <p>Калькулятор ввоза автомобилей в РБ</p>
+  </div>
+  <div class="rates-row">
+    <div class="rate-field"><label>USD → BYN</label><input id="rateUsd" type="number" step="0.0001" value="2.80" min="0.01"></div>
+    <div class="rate-field"><label>EUR → BYN</label><input id="rateEur" type="number" step="0.0001" value="3.30" min="0.01"></div>
+    <div class="rate-field"><label>CNY → BYN</label><input id="rateCny" type="number" step="0.0001" value="0.388" min="0.001"></div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <label style="font-size:10px;font-weight:700;color:transparent;text-transform:uppercase;letter-spacing:.06em">.</label>
+      <button class="btn btn-ghost btn-sm" id="refreshRatesBtn">⟳ Курсы НБРБ</button>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+<!-- ПАРАМЕТРЫ -->
+<div class="section">
+  <div class="section-head">
+    <div>
+      <div class="section-title">Параметры автомобиля</div>
+      <div class="section-sub">Основные данные для расчёта</div>
+    </div>
+    <span class="rec-badge">Рекомендуется: <strong id="recommendCountry">Литва</strong></span>
+  </div>
+  <div class="section-body">
+    <div class="grid g4" style="margin-bottom:12px">
+      <div class="field">
+        <label>Марка</label>
+        <input id="brandInput" type="text" placeholder="Toyota">
+      </div>
+      <div class="field">
+        <label>Модель</label>
+        <input id="modelInput" type="text" placeholder="Camry">
+      </div>
+      <div class="field">
+        <label>Тип транспорта</label>
+        <select id="transportType">
+          <option value="sedan">Седан</option>
+          <option value="crossover">Кроссовер</option>
+          <option value="ev">Электрокар</option>
+          <option value="moto">Мотоцикл</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Тип двигателя</label>
+        <select id="engineKind">
+          <option value="ice">Бензин</option>
+          <option value="diesel">Дизель</option>
+          <option value="hybrid">Гибрид</option>
+          <option value="electric">Электро</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid g4" style="margin-bottom:12px">
+      <div class="field">
+        <label>Объём двигателя, см³</label>
+        <select id="engineVolume"></select>
+      </div>
+      <div class="field">
+        <label>Стоимость инвойса, €</label>
+        <input id="invoicePrice" type="number" value="8000" min="0" placeholder="8000">
+      </div>
+      <div class="field">
+        <label>Страна отправления</label>
+        <select id="originCountry">
+          <option value="usa">🇺🇸 США</option>
+          <option value="china">🇨🇳 Китай</option>
+          <option value="korea">🇰🇷 Корея</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Показывать цены в</label>
+        <select id="uiCurrency">
+          <option value="usd">$ USD</option>
+          <option value="eur">€ EUR</option>
+          <option value="byn">BYN</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid g4" style="margin-bottom:12px">
+      <div class="field">
+        <label>День выпуска</label>
+        <select id="dayInput"></select>
+      </div>
+      <div class="field">
+        <label>Месяц выпуска</label>
+        <select id="monthInput">
+          <option value="1">Январь</option><option value="2">Февраль</option><option value="3">Март</option>
+          <option value="4">Апрель</option><option value="5">Май</option><option value="6">Июнь</option>
+          <option value="7">Июль</option><option value="8">Август</option><option value="9">Сентябрь</option>
+          <option value="10">Октябрь</option><option value="11">Ноябрь</option><option value="12">Декабрь</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Год выпуска</label>
+        <select id="yearInput"></select>
+      </div>
+      <div class="field">
+        <label>Пакет услуг GC</label>
+        <select id="servicePackage"><option value="none">Без пакета</option></select>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="field">
+        <label>Возраст автомобиля</label>
+        <div class="field-display" id="ageBox">
+          <div>
+            <div class="fd-main" id="ageText">—</div>
+            <div class="fd-sub" id="ageDetail">Укажите дату выпуска</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Статус для ввоза</label>
+        <div id="passBlock" class="pass-box">
+          <div class="pass-main" id="passText">—</div>
+          <div class="pass-sub" id="passForecast">Укажите параметры</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- МАРШРУТ И РАСХОДЫ -->
+<div class="section">
+  <div class="tabs" id="tabsContainer">
+    <div class="tab active" data-country="lt">🇱🇹 Литва</div>
+    <div class="tab" data-country="ge">🇬🇪 Грузия</div>
+    <div class="tab" data-country="cn">🇨🇳 Китай</div>
+    <div class="tab" data-country="kr">🇰🇷 Корея</div>
+  </div>
+  <div class="edit-bar">
+    <span>Редактирование статей расходов</span>
+    <label class="toggle"><input type="checkbox" id="editModeCheckbox" checked><span class="toggle-track"></span></label>
+  </div>
+  <div id="panelsContainer"></div>
+
+  <!-- ТАМОЖНЯ -->
+  <div class="block-label">🛃 Таможенная очистка РБ — авторасчёт</div>
+  <div class="customs-list">
+    <div class="c-row"><span class="c-label">Таможенная пошлина</span><span class="c-val" id="customDutyDisplay">— €</span></div>
+    <div class="c-row"><span class="c-label">Утилизационный сбор</span><span class="c-val" id="customUtilDisplay">— €</span></div>
+    <div class="c-row"><span class="c-label">Таможенный сбор</span><span class="c-val" id="customFeeDisplay">— €</span></div>
+    <div class="use140-row">
+      <input type="checkbox" id="use140" checked>
+      <label for="use140" style="cursor:pointer">Применить льготу Указ №140 (50% скидка на пошлину)</label>
+    </div>
+    <div class="c-row total">
+      <span class="c-label">Итого таможня</span>
+      <span class="c-val" id="customsTotalDisplay">— €</span>
+    </div>
+  </div>
+
+  <!-- РЕМОНТ -->
+  <div class="repair-toggle-row">
+    <span>🔧 Дефектовка и ремонт</span>
+    <label class="toggle"><input type="checkbox" id="repairMasterToggle"><span class="toggle-track"></span></label>
+  </div>
+  <div class="repair-content" id="repairContent">
+    <div class="repair-section-title">Восстановление SRS — подушки, ремни, блоки</div>
+    <div id="repairSRS"></div>
+    <div class="repair-section-title" style="margin-top:0">Кузовные и малярные работы</div>
+    <div id="repairBody"></div>
+  </div>
+</div>
+
+<!-- ИТОГ ПО БЛОКАМ -->
+<div class="section">
+  <div class="section-head">
+    <div><div class="section-title">Сводка расходов</div></div>
+    <div id="pkgPriceDisplay" style="font-size:12px;color:var(--text3)"></div>
+  </div>
+  <div class="sum-cards" id="sumCards"></div>
+  <div style="padding:0 20px 20px;display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-gold" id="exportPdfBtn">📄 Скачать PDF расчёт</button>
+    <button class="btn btn-ghost btn-sm" id="scrollTopBtn" style="height:42px">↑ Наверх</button>
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<!-- TOTAL BAR -->
+<div class="total-bar">
+  <div class="total-breakdown">
+    <div class="total-label">Итоговая стоимость ввоза</div>
+    <div class="total-amount" id="finalAmount">— $</div>
+    <div class="total-sub" id="finalSub"></div>
+  </div>
+  <div class="total-actions">
+    <button class="btn btn-gold" id="exportPdfBtn2">📄 PDF</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ======================== ДАННЫЕ ========================
+
+const carTemplates = {
+  lt:[
+    {block:'auction',name:'Стоимость лота',value:0},
+    {block:'auction',name:'Аукционный сбор',value:0},
+    {block:'delivery',name:'Доставка в порт Клайпеда',value:1800},
+    {block:'delivery',name:'Стоянка в порту США',value:200},
+    {block:'delivery',name:'Подготовка контейнера',value:100},
+    {block:'delivery',name:'Опасный груз',value:0},
+    {block:'arrival',name:'Экспедирование в Клайпеде',value:400},
+    {block:'arrival',name:'Доставка авто в Минск',value:700},
+    {block:'arrival',name:'Утилизационный сбор (Литва)',value:380,auto:true}
+  ],
+  ge:[
+    {block:'auction',name:'Стоимость лота',value:0},
+    {block:'auction',name:'Аукционный сбор',value:0},
+    {block:'delivery',name:'Доставка в порт Поти',value:2900},
+    {block:'delivery',name:'Стоянка в порту США',value:200},
+    {block:'delivery',name:'Подготовка контейнера',value:100},
+    {block:'delivery',name:'Опасный груз',value:0},
+    {block:'arrival',name:'Экспедирование в Поти',value:500},
+    {block:'arrival',name:'Доставка авто в Минск',value:2300},
+    {block:'arrival',name:'Утилизационный сбор (Грузия)',value:380,auto:true}
+  ],
+  cn:[
+    {block:'auction',name:'Цена авто в Китае (¥)',value:180000,cur:'cny'},
+    {block:'auction',name:'Обязательный платёж (¥)',value:14000,cur:'cny'},
+    {block:'delivery',name:'Доставка авто до Минска',value:3750},
+    {block:'delivery',name:'Комиссия за перевод',value:35},
+    {block:'arrival',name:'Расходы по таможне (Китай)',value:244},
+    {block:'arrival',name:'Утилизационный сбор',value:253}
+  ],
+  kr:[
+    {block:'auction',name:'Стоимость автомобиля (lot)',value:27400},
+    {block:'auction',name:'Услуга экспортёра',value:1200},
+    {block:'delivery',name:'Доставка Корея → Владивосток',value:2300},
+    {block:'delivery',name:'Доставка Владивосток → Минск',value:3500},
+    {block:'arrival',name:'Декларант',value:88},
+    {block:'arrival',name:'Оценка стоимости',value:147}
+  ]
+};
+
+const motoTemplates = {
+  lt:[
+    {block:'auction',name:'Стоимость лота (мото)',value:0},
+    {block:'auction',name:'Аукционный сбор',value:0},
+    {block:'delivery',name:'Доставка и подготовка',value:350},
+    {block:'arrival',name:'Прочие расходы',value:0},
+    {block:'arrival',name:'Утилизационный сбор (Литва)',value:380,auto:true}
+  ],
+  ge:[
+    {block:'auction',name:'Стоимость лота (мото)',value:0},
+    {block:'auction',name:'Аукционный сбор',value:0},
+    {block:'delivery',name:'Доставка и подготовка',value:350},
+    {block:'arrival',name:'Прочие расходы',value:0},
+    {block:'arrival',name:'Утилизационный сбор (Грузия)',value:380,auto:true}
+  ],
+  cn:[
+    {block:'auction',name:'Цена мото в Китае (¥)',value:80000,cur:'cny'},
+    {block:'delivery',name:'Доставка до Минска',value:800},
+    {block:'arrival',name:'Расходы по таможне',value:150}
+  ],
+  kr:[
+    {block:'auction',name:'Стоимость мото',value:6000},
+    {block:'delivery',name:'Доставка до Минска',value:1100},
+    {block:'arrival',name:'Декларант',value:70}
+  ]
+};
+
+const servicePackages = {
+  usa:{
+    base:{priceBYN:950,desc:'Base: подбор авто, организация доставки'},
+    standart:{priceBYN:1800,desc:'Standart: подбор, доставка, декларант'},
+    pro:{priceBYN:2500,desc:'Pro: полный комплекс (эвакуатор, запчасти)'}
+  },
+  china:{
+    base:{priceBYN:1500,desc:'Base: подбор и доставка'},
+    standart:{priceBYN:2300,desc:'Standart: подбор, доставка, декларант'}
+  },
+  korea:{}
+};
+
+const defaultRepairSRS=[
+  {name:'Подушка водителя (руль)',price:180,qty:0},
+  {name:'Подушка пассажира (передняя)',price:220,qty:0},
+  {name:'Боковая подушка (левая)',price:160,qty:0},
+  {name:'Боковая подушка (правая)',price:160,qty:0},
+  {name:'Шторка безопасности (левая)',price:200,qty:0},
+  {name:'Шторка безопасности (правая)',price:200,qty:0},
+  {name:'Коленная подушка водителя',price:140,qty:0},
+  {name:'Блок управления SRS',price:250,qty:0},
+  {name:'Датчики удара (комплект)',price:120,qty:0},
+  {name:'Шлейф руля (clock spring)',price:90,qty:0},
+  {name:'Ремень безопасности водителя',price:110,qty:0},
+  {name:'Ремень безопасности пассажира',price:110,qty:0},
+  {name:'Натяжитель ремня (левый)',price:75,qty:0},
+  {name:'Натяжитель ремня (правый)',price:75,qty:0}
+];
+const defaultRepairBody=[
+  {name:'Капот',price:150,qty:0},
+  {name:'Крыло переднее левое',price:100,qty:0},
+  {name:'Крыло переднее правое',price:100,qty:0},
+  {name:'Бампер передний',price:80,qty:0},
+  {name:'Дверь передняя левая',price:150,qty:0},
+  {name:'Дверь передняя правая',price:150,qty:0},
+  {name:'Торпедо (ремонт в Москве)',price:500,qty:0,warning:true},
+  {name:'Стапель',price:800,qty:0}
+];
+
+// ======================== STATE ========================
+
+const state={
+  country:'lt',
+  editMode:true,
+  rows:{},
+  repairSRS:defaultRepairSRS.map(r=>({...r})),
+  repairBody:defaultRepairBody.map(r=>({...r})),
+  brand:'',model:''
+};
+
+// ======================== DOM REFS ========================
+const $=id=>document.getElementById(id);
+const engVolSel=$('engineVolume');
+const daySel=$('dayInput');
+const yearSel=$('yearInput');
+const tabsCont=$('tabsContainer');
+const panelsCont=$('panelsContainer');
+const repairCont=$('repairContent');
+const rateUsd=$('rateUsd'), rateEur=$('rateEur'), rateCny=$('rateCny');
+const originSel=$('originCountry'), pkgSel=$('servicePackage');
+const uiCur=$('uiCurrency');
+const invoiceEl=$('invoicePrice');
+const editCbx=$('editModeCheckbox');
+const repairToggle=$('repairMasterToggle');
+
+// ======================== INIT SELECTS ========================
+for(let v=1000;v<=5000;v+=100) engVolSel.add(new Option(v+'',v));
+engVolSel.value=2000;
+for(let d=1;d<=31;d++) daySel.add(new Option(d,d));
+const curY=new Date().getFullYear();
+for(let y=1990;y<=curY;y++) yearSel.add(new Option(y,y));
+yearSel.value=2021; daySel.value=1;
+
+// ======================== STORAGE ========================
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+
+function saveState(){
+  lsSet('gc_brand',$('brandInput').value);
+  lsSet('gc_model',$('modelInput').value);
+  // Save rows per key
+  Object.keys(state.rows).forEach(k=>lsSet('gc_rows_'+k,JSON.stringify(state.rows[k])));
+  // Save repairs
+  lsSet('gc_srs',JSON.stringify(state.repairSRS));
+  lsSet('gc_body',JSON.stringify(state.repairBody));
+}
+
+function loadState(){
+  const b=lsGet('gc_brand'); const m=lsGet('gc_model');
+  if(b!==null){state.brand=b; $('brandInput').value=b;}
+  if(m!==null){state.model=m; $('modelInput').value=m;}
+  const srs=lsGet('gc_srs'); if(srs){try{state.repairSRS=JSON.parse(srs)}catch(e){}}
+  const body=lsGet('gc_body'); if(body){try{state.repairBody=JSON.parse(body)}catch(e){}}
+}
+
+// ======================== RATES & CONVERSIONS ========================
+function R(id){return parseFloat($(id).value)||{rateUsd:2.8,rateEur:3.3,rateCny:0.388}[id]||1}
+function getUsd(){return R('rateUsd')||2.8}
+function getEur(){return R('rateEur')||3.3}
+function getCny(){return R('rateCny')||0.388}
+
+// Convert any amount from its native currency to USD (internal calculation unit)
+function toUSD(value, cur){
+  cur = cur||'usd';
+  if(cur==='cny') return value * getCny() / getUsd();
+  if(cur==='eur') return value * getEur() / getUsd();
+  if(cur==='byn') return value / getUsd();
+  return value; // already usd
+}
+
+// Convert USD to display currency
+function fromUSD(usd){
+  const sym=uiCur.value;
+  if(sym==='eur') return usd * getUsd() / getEur();
+  if(sym==='byn') return usd * getUsd();
+  return usd;
+}
+
+function getCurSym(){
+  const v=uiCur.value;
+  return v==='eur'?'€':v==='byn'?'BYN':'$';
+}
+
+function fmt(usd){
+  const val=fromUSD(usd);
+  const sym=getCurSym();
+  return val.toLocaleString('ru-RU',{minimumFractionDigits:0,maximumFractionDigits:0})+' '+sym;
+}
+
+// ======================== AGE & PASS ========================
+function decline(n,one,two,five){
+  const m10=n%10, m100=n%100;
+  if(m100>=11&&m100<=19) return five;
+  if(m10===1) return one;
+  if(m10>=2&&m10<=4) return two;
+  return five;
+}
+
+function calcAge(dob){
+  const now=new Date();
+  let y=now.getFullYear()-dob.getFullYear();
+  let mo=now.getMonth()-dob.getMonth();
+  let d=now.getDate()-dob.getDate();
+  if(d<0){mo--;d+=new Date(now.getFullYear(),now.getMonth(),0).getDate();}
+  if(mo<0){y--;mo+=12;}
+  if(y<0){y=0;mo=0;d=0;}
+  return{years:y,months:mo,days:d,totalMonths:y*12+mo};
+}
+
+function updateAgeAndPass(){
+  const y=parseInt(yearSel.value)||0;
+  const mo=parseInt($('monthInput').value)||1;
+  const d=parseInt(daySel.value)||1;
+  const dob=new Date(y,mo-1,d);
+  const now=new Date();
+  if(isNaN(dob.getTime())||y<1990||dob>now){
+    $('ageText').textContent='Некорректная дата';
+    $('ageDetail').textContent='';
+    return{years:0,months:0,days:0,totalMonths:0};
+  }
+  const age=calcAge(dob);
+  const parts=[];
+  if(age.years>0) parts.push(age.years+' '+decline(age.years,'год','года','лет'));
+  if(age.months>0) parts.push(age.months+' '+decline(age.months,'месяц','месяца','месяцев'));
+  const wks=Math.floor(age.days/7), rmd=age.days%7;
+  if(wks>0) parts.push(wks+' '+decline(wks,'неделя','недели','недель'));
+  if(rmd>0) parts.push(rmd+' '+decline(rmd,'день','дня','дней'));
+  $('ageText').textContent=parts.join(', ')||'0 дней';
+  const mname=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][mo-1];
+  $('ageDetail').textContent=`Дата выпуска: ${d} ${mname} ${y} · ${age.totalMonths} мес.`;
+
+  const passFrom=new Date(dob); passFrom.setFullYear(passFrom.getFullYear()+3);
+  const passTo=new Date(dob); passTo.setFullYear(passTo.getFullYear()+5);
+  const pb=$('passBlock');
+  const nowMs=now.getTime();
+  if(nowMs>=passFrom.getTime()&&nowMs<=passTo.getTime()){
+    $('passText').innerHTML='<span style="color:var(--green)">✓ Проходная</span>';
+    const remMs=passTo.getTime()-nowMs;
+    const remD=Math.ceil(remMs/86400000);
+    $('passForecast').textContent=`Проходная до ${passTo.toLocaleDateString('ru-RU')} (ещё ≈ ${Math.floor(remD/365)} г. ${Math.floor((remD%365)/30)} мес.)`;
+    pb.className='pass-box pass-ok';
+  } else if(nowMs<passFrom.getTime()){
+    $('passText').innerHTML='<span style="color:var(--red)">✗ Ещё не проходная</span>';
+    const untilD=Math.ceil((passFrom.getTime()-nowMs)/86400000);
+    $('passForecast').textContent=`Станет проходной ${passFrom.toLocaleDateString('ru-RU')} (через ≈ ${Math.floor(untilD/365)} г. ${Math.floor((untilD%365)/30)} мес.)`;
+    pb.className='pass-box pass-bad';
+  } else {
+    $('passText').innerHTML='<span style="color:var(--red)">✗ Срок истёк</span>';
+    $('passForecast').textContent=`Была проходной с ${passFrom.toLocaleDateString('ru-RU')} по ${passTo.toLocaleDateString('ru-RU')}`;
+    pb.className='pass-box pass-bad';
+  }
+  return age;
+}
+
+// ======================== CUSTOMS ========================
+function calcCustoms(){
+  const age=updateAgeAndPass();
+  const years=age.years||0;
+  const vol=parseInt(engVolSel.value)||0;
+  const isEv=$('transportType').value==='ev'||$('engineKind').value==='electric';
+  const invoiceEur=parseFloat(invoiceEl.value)||0;
+  let dutyEur=0;
+
+  if(!isEv){
+    if(years<3){
+      let rPct,rMin;
+      if(invoiceEur<=8500){rPct=0.54;rMin=2.5;}
+      else if(invoiceEur<=16700){rPct=0.48;rMin=3.5;}
+      else if(invoiceEur<=42200){rPct=0.48;rMin=5.5;}
+      else if(invoiceEur<=84500){rPct=0.48;rMin=7.5;}
+      else if(invoiceEur<=169000){rPct=0.48;rMin=15;}
+      else{rPct=0.48;rMin=20;}
+      dutyEur=Math.max(invoiceEur*rPct, vol*rMin);
+    } else if(years<=5){
+      if(vol<=1000) dutyEur=vol*1.5;
+      else if(vol<=1500) dutyEur=vol*1.7;
+      else if(vol<=1800) dutyEur=vol*2.5;
+      else if(vol<=2300) dutyEur=vol*2.7;
+      else if(vol<=3000) dutyEur=vol*3.0;
+      else dutyEur=vol*3.6;
+    } else {
+      if(vol<=1000) dutyEur=vol*3.0;
+      else if(vol<=1500) dutyEur=vol*3.2;
+      else if(vol<=1800) dutyEur=vol*3.5;
+      else if(vol<=2300) dutyEur=vol*4.8;
+      else if(vol<=3000) dutyEur=vol*5.0;
+      else dutyEur=vol*5.7;
+    }
+  }
+  if($('use140').checked&&!isEv) dutyEur/=2;
+
+  const utilByn=years<3?544.5:816.7;
+  const utilEur=utilByn/getEur();
+  const feeEur=120/getEur();
+  return{dutyEur,utilEur,feeEur,totalEur:dutyEur+utilEur+feeEur};
+}
+
+function updateCustomsDisplay(){
+  const c=calcCustoms();
+  const eurSym='€';
+  $('customDutyDisplay').textContent=c.dutyEur.toFixed(2)+' '+eurSym;
+  $('customUtilDisplay').textContent=c.utilEur.toFixed(2)+' '+eurSym;
+  $('customFeeDisplay').textContent=c.feeEur.toFixed(2)+' '+eurSym;
+  const totalUsd=toUSD(c.totalEur,'eur');
+  $('customsTotalDisplay').textContent=c.totalEur.toFixed(2)+' € ≈ '+fmt(totalUsd);
+  return c;
+}
+
+// ======================== ROWS ========================
+function getRowKey(){
+  return state.country+'_'+$('transportType').value;
+}
+
+function initRows(){
+  const key=getRowKey();
+  if(!state.rows[key]){
+    // Try load from storage
+    const saved=lsGet('gc_rows_'+key);
+    if(saved){try{state.rows[key]=JSON.parse(saved);return;}catch(e){}}
+    const type=$('transportType').value;
+    const tmpl=(type==='moto'?motoTemplates:carTemplates)[state.country];
+    state.rows[key]=tmpl?JSON.parse(JSON.stringify(tmpl)):[];
+  }
+}
+
+function getLocalUtil(){
+  const y=parseInt(yearSel.value)||0;
+  const mo=parseInt($('monthInput').value)||1;
+  const d=parseInt(daySel.value)||1;
+  if(y<1990) return 380;
+  const age=calcAge(new Date(y,mo-1,d));
+  return age.years<3?190:380;
+}
+
+function updateAutoRows(){
+  const rows=state.rows[getRowKey()]||[];
+  const util=getLocalUtil();
+  rows.forEach(r=>{if(r.auto) r.value=util;});
+}
+
+function sumBlocksUSD(){
+  const rows=state.rows[getRowKey()]||[];
+  let sA=0,sD=0,sAr=0;
+  rows.forEach(r=>{
+    let v=parseFloat(r.value)||0;
+    if(v<0) v=0;
+    const usd=toUSD(v, r.cur||'usd');
+    if(r.block==='auction') sA+=usd;
+    else if(r.block==='delivery') sD+=usd;
+    else sAr+=usd;
+  });
+  return{sumAuction:sA,sumDelivery:sD,sumArrival:sAr};
+}
+
+function getPackageUSD(){
+  const origin=originSel.value;
+  if(pkgSel.value==='none'||!servicePackages[origin]) return 0;
+  const pkg=servicePackages[origin][pkgSel.value];
+  return pkg?toUSD(pkg.priceBYN,'byn'):0;
+}
+
+function calcRepairUSD(){
+  if(!repairToggle.checked) return 0;
+  let t=0;
+  state.repairSRS.forEach(r=>t+=r.price*r.qty);
+  state.repairBody.forEach(r=>t+=r.price*r.qty);
+  return t; // repair prices already in USD
+}
+
+// ======================== RENDER PANELS ========================
+function renderPanels(){
+  panelsCont.innerHTML='';
+  const key=getRowKey();
+  const rows=state.rows[key]||[];
+  const blockMeta={
+    auction:{icon:'🏷',label:'Аукцион'},
+    delivery:{icon:'🚢',label:'Доставка'},
+    arrival:{icon:'🏁',label:'Расходы по прибытию'}
+  };
+  Object.entries(blockMeta).forEach(([bk,meta])=>{
+    const blockRows=rows.filter(r=>r.block===bk);
+    if(!blockRows.length) return;
+
+    const wrap=document.createElement('div');
+    const lbl=document.createElement('div');
+    lbl.className='block-label';
+    lbl.textContent=meta.icon+' '+meta.label;
+    wrap.appendChild(lbl);
+
+    const list=document.createElement('div');
+    list.className='row-list';
+
+    blockRows.forEach(row=>{
+      const div=document.createElement('div');
+      div.className='log-row';
+
+      const nm=document.createElement('div');
+      nm.className='r-name';
+      const ni=document.createElement('input');
+      ni.type='text'; ni.value=row.name; ni.readOnly=!state.editMode;
+      ni.addEventListener('input',()=>{row.name=ni.value;saveState();calc();});
+      nm.appendChild(ni);
+
+      const vw=document.createElement('div'); vw.className='r-val';
+      const vi=document.createElement('input');
+      vi.type='number'; vi.min='0'; vi.value=row.value;
+      vi.readOnly=!state.editMode||!!row.auto;
+      if(row.auto) vi.style.opacity='0.5';
+      vi.addEventListener('input',()=>{
+        if(row.auto) return;
+        let v=parseFloat(vi.value); if(isNaN(v)||v<0) v=0;
+        row.value=v; saveState(); calc();
+      });
+      // Currency hint
+      const hint=document.createElement('span');
+      hint.className='r-cur';
+      hint.textContent=row.cur==='cny'?'¥':getCurSym();
+      vw.appendChild(vi); vw.appendChild(hint);
+
+      const db=document.createElement('button');
+      db.className='r-del'; db.textContent='×';
+      db.style.display=state.editMode?'flex':'none';
+      db.addEventListener('click',()=>{
+        const idx=rows.indexOf(row);
+        if(idx>=0){rows.splice(idx,1);saveState();renderPanels();calc();}
+      });
+
+      div.appendChild(nm); div.appendChild(vw); div.appendChild(db);
+      list.appendChild(div);
+    });
+
+    // Add row form
+    if(state.editMode){
+      const af=document.createElement('div'); af.className='add-form';
+      const ni2=document.createElement('input'); ni2.type='text'; ni2.placeholder='Название статьи';
+      const vi2=document.createElement('input'); vi2.type='number'; vi2.placeholder='Сумма'; vi2.className='w-price'; vi2.min='0';
+      const ab=document.createElement('button'); ab.className='btn btn-ghost btn-sm'; ab.textContent='+ Добавить';
+      ab.addEventListener('click',()=>{
+        const n=ni2.value.trim(); let v=parseFloat(vi2.value); if(!n) return;
+        if(isNaN(v)||v<0) v=0;
+        rows.push({block:bk,name:n,value:v});
+        ni2.value=''; vi2.value='';
+        saveState(); renderPanels(); calc();
+      });
+      af.appendChild(ni2); af.appendChild(vi2); af.appendChild(ab);
+      list.appendChild(af);
+    }
+
+    wrap.appendChild(list);
+    panelsCont.appendChild(wrap);
+  });
+}
+
+// ======================== RENDER REPAIR ========================
+function renderRepair(){
+  const renderList=(contId, items)=>{
+    const cont=$(contId); cont.innerHTML='';
+    items.forEach((item,i)=>{
+      const div=document.createElement('div'); div.className='repair-row';
+
+      const nm=document.createElement('span'); nm.className='rr-name';
+      nm.textContent=item.name;
+      if(item.warning){const w=document.createElement('span');w.className='rr-warn';w.textContent='+1 мес.';nm.appendChild(w);}
+
+      const pr=document.createElement('span'); pr.className='rr-price';
+      pr.textContent=item.price+' $/шт';
+
+      const qi=document.createElement('input'); qi.type='number'; qi.className='rr-qty';
+      qi.min='0'; qi.value=item.qty;
+      const tt=document.createElement('span'); tt.className='rr-total';
+      tt.textContent=(item.price*item.qty).toFixed(0)+' $';
+      qi.addEventListener('input',()=>{
+        let q=parseInt(qi.value)||0; if(q<0) q=0;
+        item.qty=q; tt.textContent=(item.price*q).toFixed(0)+' $';
+        saveState(); calc();
+      });
+
+      let db=null;
+      if(state.editMode){
+        db=document.createElement('button'); db.className='r-del'; db.textContent='×';
+        db.addEventListener('click',()=>{items.splice(i,1);saveState();renderRepair();calc();});
+      }
+
+      div.appendChild(nm); div.appendChild(pr); div.appendChild(qi); div.appendChild(tt);
+      if(db) div.appendChild(db);
+      cont.appendChild(div);
+    });
+
+    if(state.editMode){
+      const af=document.createElement('div'); af.className='add-form';
+      const ni=document.createElement('input'); ni.type='text'; ni.placeholder='Название работы/детали';
+      const pi=document.createElement('input'); pi.type='number'; pi.placeholder='Цена $'; pi.className='w-price'; pi.min='0';
+      const ab=document.createElement('button'); ab.className='btn btn-ghost btn-sm'; ab.textContent='+ Добавить';
+      ab.addEventListener('click',()=>{
+        const n=ni.value.trim(); let p=parseFloat(pi.value);
+        if(!n) return; if(isNaN(p)||p<0) p=0;
+        items.push({name:n,price:p,qty:0});
+        saveState(); renderRepair(); calc();
+      });
+      af.appendChild(ni); af.appendChild(pi); af.appendChild(ab);
+      const cont=$(contId); cont.appendChild(af);
+    }
+  };
+  renderList('repairSRS',state.repairSRS);
+  renderList('repairBody',state.repairBody);
+}
+
+// ======================== TABS ========================
+function determineRec(){
+  const origin=originSel.value;
+  const type=$('transportType').value;
+  const vol=parseInt(engVolSel.value)||0;
+  if(origin==='usa') return (type==='crossover'&&vol>=2000)?'ge':'lt';
+  if(origin==='china') return 'cn';
+  if(origin==='korea') return 'kr';
+  return 'lt';
+}
+
+function updateTabsVisibility(){
+  const origin=originSel.value;
+  tabsCont.querySelectorAll('.tab').forEach(t=>{
+    const c=t.dataset.country;
+    const show=(origin==='usa'&&(c==='lt'||c==='ge'))||(origin==='china'&&c==='cn')||(origin==='korea'&&c==='kr');
+    t.style.display=show?'':'none';
+  });
+}
+
+function highlightRec(){
+  const rec=determineRec();
+  const names={lt:'Литва',ge:'Грузия',cn:'Китай',kr:'Корея'};
+  $('recommendCountry').textContent=names[rec]||rec;
+  tabsCont.querySelectorAll('.tab').forEach(t=>t.classList.remove('recommended','active'));
+  const at=tabsCont.querySelector('[data-country="'+rec+'"]');
+  if(at){at.classList.add('recommended','active');state.country=rec;}
+}
+
+function updatePkgOptions(){
+  const origin=originSel.value;
+  pkgSel.innerHTML='<option value="none">Без пакета</option>';
+  const pkgs=servicePackages[origin]||{};
+  Object.entries(pkgs).forEach(([k,v])=>pkgSel.add(new Option(v.desc,k)));
+  pkgSel.value='none';
+}
+
+// ======================== CALCULATE TOTAL ========================
+function calc(){
+  updateAutoRows();
+  const{sumAuction,sumDelivery,sumArrival}=sumBlocksUSD();
+  const customs=updateCustomsDisplay();
+  const customsUSD=toUSD(customs.totalEur,'eur');
+  const packageUSD=getPackageUSD();
+  const repairUSD=calcRepairUSD();
+  const totalUSD=sumAuction+sumDelivery+sumArrival+customsUSD+packageUSD+repairUSD;
+
+  $('finalAmount').textContent=fmt(totalUSD);
+
+  // Summary cards
+  const cards=[
+    {label:'Аукцион',val:sumAuction,icon:'🏷'},
+    {label:'Доставка',val:sumDelivery,icon:'🚢'},
+    {label:'По прибытию',val:sumArrival,icon:'🏁'},
+    {label:'Таможня',val:customsUSD,icon:'🛃'},
+  ];
+  if(packageUSD>0) cards.push({label:'Пакет GC',val:packageUSD,icon:'📦'});
+  if(repairUSD>0) cards.push({label:'Ремонт',val:repairUSD,icon:'🔧'});
+
+  $('sumCards').innerHTML=cards.map(c=>`
+    <div class="sum-card">
+      <div class="sc-label">${c.icon} ${c.label}</div>
+      <div class="sc-val">${fmt(c.val)}</div>
+      <div class="sc-sub">${(c.val/totalUSD*100).toFixed(1)}% от итога</div>
+    </div>
+  `).join('');
+
+  // Sub breakdown
+  $('finalSub').textContent=`Таможня: ${fmt(customsUSD)} · Аукцион: ${fmt(sumAuction)} · Доставка: ${fmt(sumDelivery)} · Прибытие: ${fmt(sumArrival)}${repairUSD>0?' · Ремонт: '+fmt(repairUSD):''}`;
+
+  // Pkg display
+  const pkg=servicePackages[originSel.value]?.[pkgSel.value];
+  $('pkgPriceDisplay').textContent=pkg?pkg.priceBYN+' BYN ≈ '+fmt(packageUSD):'';
+}
+
+// ======================== PDF EXPORT ========================
+async function exportPDF(){
+  const btn=$('exportPdfBtn');
+  btn.textContent='⏳ Генерация...';
+  btn.disabled=true;
+
+  try{
+    const{sumAuction,sumDelivery,sumArrival}=sumBlocksUSD();
+    const customs=calcCustoms();
+    const customsUSD=toUSD(customs.totalEur,'eur');
+    const packageUSD=getPackageUSD();
+    const repairUSD=calcRepairUSD();
+    const totalUSD=sumAuction+sumDelivery+sumArrival+customsUSD+packageUSD+repairUSD;
+    const brand=$('brandInput').value||'—';
+    const model=$('modelInput').value||'—';
+    const origin={usa:'США',china:'Китай',korea:'Корея'}[originSel.value]||originSel.value;
+    const country={lt:'Литва',ge:'Грузия',cn:'Китай (маршрут)',kr:'Корея (маршрут)'}[state.country]||state.country;
+    const rows=state.rows[getRowKey()]||[];
+    const curSym=getCurSym();
+    const now=new Date().toLocaleDateString('ru-RU');
+
+    const wrapper=document.createElement('div');
+    wrapper.style.cssText='width:760px;background:#fff;padding:32px;font-family:Arial,sans-serif;color:#111;position:fixed;left:-9999px;top:0';
+
+    const items=[
+      ['Аукцион',sumAuction],
+      ['Доставка',sumDelivery],
+      ['Расходы по прибытию',sumArrival],
+      ['Таможня РБ',customsUSD],
+    ];
+    if(packageUSD>0) items.push(['Пакет услуг GC',packageUSD]);
+    if(repairUSD>0) items.push(['Ремонт',repairUSD]);
+
+    wrapper.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #1a1a2e">
+        <div>
+          <div style="font-size:24px;font-weight:900;color:#1a1a2e;letter-spacing:-0.03em">GLOBAL CAR</div>
+          <div style="font-size:12px;color:#666;margin-top:2px">Расчёт стоимости ввоза автомобиля</div>
+        </div>
+        <div style="text-align:right;font-size:12px;color:#666">Дата расчёта: ${now}</div>
+      </div>
+
+      <div style="background:#f8f9fa;border-radius:10px;padding:16px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap">
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700">Автомобиль</div><div style="font-size:18px;font-weight:800;color:#111;margin-top:2px">${brand} ${model}</div></div>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700">Страна отправления</div><div style="font-size:14px;font-weight:700;margin-top:2px">${origin}</div></div>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700">Маршрут через</div><div style="font-size:14px;font-weight:700;margin-top:2px">${country}</div></div>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700">Объём двигателя</div><div style="font-size:14px;font-weight:700;margin-top:2px">${engVolSel.value} см³</div></div>
+        <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700">Инвойс</div><div style="font-size:14px;font-weight:700;margin-top:2px">${invoiceEl.value||0} €</div></div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px">Детальный расчёт</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tr style="background:#1a1a2e;color:#fff">
+            <th style="padding:8px 12px;text-align:left;font-weight:700">Статья расходов</th>
+            <th style="padding:8px 12px;text-align:right;font-weight:700">Сумма</th>
+          </tr>
+          ${rows.map((r,i)=>`
+            <tr style="background:${i%2===0?'#f8f9fa':'#fff'}">
+              <td style="padding:7px 12px">${r.name}</td>
+              <td style="padding:7px 12px;text-align:right;font-weight:600">${fmt(toUSD(r.value||0,r.cur||'usd'))}</td>
+            </tr>
+          `).join('')}
+          <tr style="background:#fffbeb">
+            <td style="padding:7px 12px">Пошлина</td>
+            <td style="padding:7px 12px;text-align:right;font-weight:600">${customs.dutyEur.toFixed(0)} € ≈ ${fmt(toUSD(customs.dutyEur,'eur'))}</td>
+          </tr>
+          <tr style="background:#f8f9fa">
+            <td style="padding:7px 12px">Утилизационный сбор РБ</td>
+            <td style="padding:7px 12px;text-align:right;font-weight:600">${customs.utilEur.toFixed(0)} € ≈ ${fmt(toUSD(customs.utilEur,'eur'))}</td>
+          </tr>
+          <tr style="background:#fffbeb">
+            <td style="padding:7px 12px">Таможенный сбор РБ</td>
+            <td style="padding:7px 12px;text-align:right;font-weight:600">${customs.feeEur.toFixed(0)} € ≈ ${fmt(toUSD(customs.feeEur,'eur'))}</td>
+          </tr>
+          ${packageUSD>0?`<tr style="background:#f8f9fa"><td style="padding:7px 12px">Пакет услуг GC</td><td style="padding:7px 12px;text-align:right;font-weight:600">${fmt(packageUSD)}</td></tr>`:''}
+          ${repairUSD>0?`<tr style="background:#fffbeb"><td style="padding:7px 12px">Дефектовка / ремонт</td><td style="padding:7px 12px;text-align:right;font-weight:600">${fmt(repairUSD)}</td></tr>`:''}
+        </table>
+      </div>
+
+      <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;color:#fff">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.6);font-weight:700">ИТОГОВАЯ СТОИМОСТЬ ВВОЗА</div>
+          <div style="font-size:32px;font-weight:900;color:#e8b84b;margin-top:4px;letter-spacing:-0.03em">${fmt(totalUSD)}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">Курсы: USD=${getUsd()} BYN · EUR=${getEur()} BYN · CNY=${getCny()} BYN</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:rgba(255,255,255,.5)">globalcar.by</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;font-size:10px;color:#999;text-align:center">
+        * Расчёт является ориентировочным. Фактическая стоимость может отличаться в зависимости от состояния автомобиля, аукционных условий и актуальных курсов валют.
+      </div>
+    `;
+
+    document.body.appendChild(wrapper);
+    const canvas=await html2canvas(wrapper,{scale:2,useCORS:true,logging:false});
+    document.body.removeChild(wrapper);
+
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'pt',format:'a4'});
+    const pw=doc.internal.pageSize.getWidth();
+    const ph=doc.internal.pageSize.getHeight();
+    const iw=canvas.width; const ih=canvas.height;
+    const ratio=pw/iw;
+    const scaledH=ih*ratio;
+
+    if(scaledH<=ph){
+      doc.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',0,0,pw,scaledH);
+    } else {
+      // Multi-page
+      let yPos=0;
+      while(yPos<ih){
+        const sliceH=Math.min(ph/ratio, ih-yPos);
+        const sliceCanvas=document.createElement('canvas');
+        sliceCanvas.width=iw; sliceCanvas.height=sliceH;
+        sliceCanvas.getContext('2d').drawImage(canvas,0,yPos,iw,sliceH,0,0,iw,sliceH);
+        if(yPos>0) doc.addPage();
+        doc.addImage(sliceCanvas.toDataURL('image/jpeg',0.95),'JPEG',0,0,pw,sliceH*ratio);
+        yPos+=sliceH;
+      }
+    }
+
+    const fname=`GLOBALCAR_${brand}_${model}_${state.country.toUpperCase()}_${now.replace(/\./g,'-')}.pdf`;
+    doc.save(fname);
+  } catch(e){
+    alert('Ошибка генерации PDF: '+e.message);
+    console.error(e);
+  }
+
+  btn.textContent='📄 Скачать PDF расчёт';
+  btn.disabled=false;
+}
+
+// ======================== EVENTS ========================
+$('brandInput').addEventListener('input',()=>{state.brand=$('brandInput').value;saveState();});
+$('modelInput').addEventListener('input',()=>{state.model=$('modelInput').value;saveState();});
+
+$('transportType').addEventListener('change',()=>{
+  const t=$('transportType').value;
+  $('engineKind').disabled=(t==='ev');
+  if(t==='ev') $('engineKind').value='electric';
+  updateTabsVisibility(); highlightRec(); initRows(); renderPanels(); updateAgeAndPass(); calc();
+});
+$('engineKind').addEventListener('change',()=>{renderPanels();calc();});
+$('engineVolume').addEventListener('change',()=>{updateAgeAndPass();highlightRec();calc();});
+$('monthInput').addEventListener('change',()=>{updateAgeAndPass();calc();});
+$('dayInput').addEventListener('change',()=>{updateAgeAndPass();calc();});
+$('yearInput').addEventListener('change',()=>{updateAgeAndPass();calc();});
+$('use140').addEventListener('change',calc);
+$('invoicePrice').addEventListener('input',calc);
+$('originCountry').addEventListener('change',()=>{updateTabsVisibility();highlightRec();updatePkgOptions();initRows();renderPanels();calc();});
+$('servicePackage').addEventListener('change',calc);
+[rateUsd,rateEur,rateCny].forEach(el=>el.addEventListener('input',()=>{renderPanels();calc();}));
+$('uiCurrency').addEventListener('change',()=>{renderPanels();renderRepair();calc();});
+
+editCbx.addEventListener('change',e=>{
+  state.editMode=e.target.checked;
+  renderPanels(); renderRepair();
+});
+repairToggle.addEventListener('change',()=>{
+  repairCont.classList.toggle('open',repairToggle.checked);
+  calc();
+});
+
+tabsCont.addEventListener('click',e=>{
+  const tab=e.target.closest('.tab');
+  if(!tab) return;
+  state.country=tab.dataset.country;
+  tabsCont.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  if(tab.dataset.country===determineRec()) tab.classList.add('recommended');
+  initRows(); renderPanels(); calc();
+});
+
+$('exportPdfBtn').addEventListener('click',exportPDF);
+$('exportPdfBtn2').addEventListener('click',exportPDF);
+$('scrollTopBtn').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+$('refreshRatesBtn').addEventListener('click',async()=>{
+  const btn=$('refreshRatesBtn');
+  btn.textContent='⏳ Загрузка...'; btn.disabled=true;
+  try{
+    const resp=await fetch('https://api.nbrb.by/exrates/rates?periodicity=0');
+    const data=await resp.json();
+    const usd=data.find(x=>x.Cur_Abbreviation==='USD');
+    const eur=data.find(x=>x.Cur_Abbreviation==='EUR');
+    const cny=data.find(x=>x.Cur_Abbreviation==='CNY');
+    if(usd) rateUsd.value=usd.Cur_OfficialRate;
+    if(eur) rateEur.value=eur.Cur_OfficialRate;
+    if(cny) rateCny.value=(cny.Cur_OfficialRate/cny.Cur_Scale).toFixed(4);
+    calc();
+    btn.textContent='✓ Обновлено';
+  } catch(e){
+    btn.textContent='⚠ Ошибка';
+  } finally{
+    setTimeout(()=>{btn.textContent='⟳ Курсы НБРБ';btn.disabled=false;},2000);
+  }
+});
+
+// ======================== BOOT ========================
+function init(){
+  updateTabsVisibility();
+  highlightRec();
+  updatePkgOptions();
+  initRows();
+  loadState();
+  renderPanels();
+  renderRepair();
+  updateAgeAndPass();
+  calc();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
